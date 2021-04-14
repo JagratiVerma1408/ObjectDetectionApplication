@@ -29,10 +29,11 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginBottom="50dp"
+        android:theme="@android:style/Theme.Holo"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/rectangle"
-        android:textColor="@color/tfe_color_primary_dark"
-        android:text="Listen to Results"
+        android:background="@color/tfe_semi_transparent"
+        android:textColor="@color/tfe_color_accent"
+        android:text="@string/listen_to_results"
         android:textSize="20sp"
         android:textStyle="bold" />
     </RelativeLayout>
