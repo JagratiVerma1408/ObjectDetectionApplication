@@ -26,13 +26,24 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Bundle;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import org.tensorflow.lite.examples.detection.customview.OverlayView;
 import org.tensorflow.lite.examples.detection.customview.OverlayView.DrawCallback;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
@@ -61,9 +72,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
   private static final boolean SAVE_PREVIEW_BITMAP = false;
   private static final float TEXT_SIZE_DIP = 10;
+  public TextToSpeech textToSpeech;
   OverlayView trackingOverlay;
   private Integer sensorOrientation;
-
+  CheckBox speak;
   private Classifier detector;
 
   private long lastProcessingTimeMs;
@@ -82,7 +94,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private BorderedText borderedText;
 
-  @Override
+
+
+    @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     final float textSizePx =
         TypedValue.applyDimension(
@@ -194,21 +208,55 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
                 break;
             }
+            ArrayList<String> speech ;
+              textToSpeech = new TextToSpeech(getApplicationContext(), status -> {
+                  if (status == TextToSpeech.SUCCESS) {
+                      int ttsLang = textToSpeech.setLanguage(Locale.US);
 
-            final List<Classifier.Recognition> mappedRecognitions =
+                      if (ttsLang == TextToSpeech.LANG_MISSING_DATA
+                              || ttsLang == TextToSpeech.LANG_NOT_SUPPORTED) {
+                          Log.e("TTS", "The Language is not supported!");
+                      } else {
+                          Log.i("TTS", "Language Supported.");
+                      }
+                      Log.i("TTS", "Initialization success.");
+                  } else {
+                      Toast.makeText(getApplicationContext(), "TTS Initialization failed!", Toast.LENGTH_SHORT).show();
+                  }
+              });
+
+              final List<Classifier.Recognition> mappedRecognitions =
                 new LinkedList<Classifier.Recognition>();
-
+              speech = new ArrayList<>();
             for (final Classifier.Recognition result : results) {
               final RectF location = result.getLocation();
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
-
                 cropToFrameTransform.mapRect(location);
-
+                speech.add(result.getTitle());
                 result.setLocation(location);
                 mappedRecognitions.add(result);
               }
             }
+              Set<String> hashSet = new LinkedHashSet(speech);
+              ArrayList<String> removedDuplicates = new ArrayList(hashSet);
+              speak=findViewById(R.id.btn);
+              for(int j = 0; j < removedDuplicates.size(); j++){
+                  if (speak.isChecked()){
+                      String data=removedDuplicates.get(j);
+                      int speechStatus = textToSpeech.speak(data, TextToSpeech.QUEUE_FLUSH, null);
+                      if (speechStatus == TextToSpeech.ERROR) {
+                          Log.e("TTS", "Error in converting Text to Speech!");
+                      }
+                  }
+                  if (!speak.isChecked()){
+                      if (textToSpeech != null) {
+                          textToSpeech.stop();
+                      }
+                  }
+              }
+
+
 
             tracker.trackResults(mappedRecognitions, currTimestamp);
             trackingOverlay.postInvalidate();
@@ -229,6 +277,33 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   @Override
+  public void onStop() {
+    super.onStop();
+      if (textToSpeech != null) {
+          textToSpeech.stop();
+          textToSpeech.shutdown();
+      }
+  }
+
+    @Override
+    public synchronized void onPause() {
+        super.onPause();
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+    }
+
+    @Override
+    public synchronized void onDestroy() {
+        super.onDestroy();
+
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+    }
+    @Override
   protected int getLayoutId() {
     return R.layout.tfe_od_camera_connection_fragment_tracking;
   }

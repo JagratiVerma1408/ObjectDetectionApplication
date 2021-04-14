@@ -19,17 +19,21 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import java.util.List;
+
+import org.tensorflow.lite.examples.detection.CameraActivity;
 import org.tensorflow.lite.examples.detection.tflite.Classifier.Recognition;
 
 public class RecognitionScoreView extends View implements ResultsView {
   private static final float TEXT_SIZE_DIP = 14;
-  private final float textSizePx;
-  private final Paint fgPaint;
-  private final Paint bgPaint;
+  private  float textSizePx = 0;
+  private  Paint fgPaint;
+  private  Paint bgPaint;
   private List<Recognition> results;
+
 
   public RecognitionScoreView(final Context context, final AttributeSet set) {
     super(context, set);
@@ -63,5 +67,6 @@ public class RecognitionScoreView extends View implements ResultsView {
         y += (int) (fgPaint.getTextSize() * 1.5f);
       }
     }
+
   }
 }

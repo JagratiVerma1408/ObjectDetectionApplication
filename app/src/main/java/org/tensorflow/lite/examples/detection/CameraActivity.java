@@ -38,6 +38,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
@@ -50,6 +53,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import java.nio.ByteBuffer;
+import java.util.Locale;
+
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
 
@@ -85,6 +90,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private ImageView plusImageView, minusImageView;
   private SwitchCompat apiSwitchCompat;
   private TextView threadsTextView;
+  public  TextToSpeech textToSpeech;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -163,6 +169,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
     plusImageView.setOnClickListener(this);
     minusImageView.setOnClickListener(this);
+
   }
 
   protected int[] getRgbBytes() {
@@ -177,6 +184,31 @@ public abstract class CameraActivity extends AppCompatActivity
   protected byte[] getLuminance() {
     return yuvBytes[0];
   }
+  public void setTextToSpeech(String data){
+    textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+      @Override
+      public void onInit(int status) {
+        Log.d("init","texttospeech");
+        if (status == TextToSpeech.SUCCESS) {
+          int ttsLang = textToSpeech.setLanguage(Locale.US);
+
+          if (ttsLang == TextToSpeech.LANG_MISSING_DATA
+                  || ttsLang == TextToSpeech.LANG_NOT_SUPPORTED) {
+            Log.e("TTS", "The Language is not supported!");
+          } else {
+            Log.i("TTS", "Language Supported.");
+          }
+          int speechStatus = textToSpeech.speak(data, TextToSpeech.QUEUE_FLUSH, null);
+          if (speechStatus == TextToSpeech.ERROR) {
+            Log.e("TTS", "Error in converting Text to Speech!");
+          }
+          Log.i("TTS", "Initialization success.");
+        }
+      }
+    });
+
+  }
+
 
   /** Callback for android.hardware.Camera API */
   @Override
