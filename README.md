@@ -37,5 +37,12 @@ Downloading, extraction and placing it in assets folder has been managed automat
 
 If you explicitly want to download the model, you can download from **[here](http://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip)**. Extract the zip to get the .tflite and label file.
 
-### Additional Note
-_Please do not delete the assets folder content_. If you explicitly deleted the files, then please choose *Build*->*Rebuild* from menu to re-download the deleted model files into assets folder.
+## Screenshots
+
+<table>
+  <tr>
+<td> <img src="https://user-images.githubusercontent.com/58701169/127970079-590e40fb-7454-4edd-b3cb-12197d6b22f8.jpg" width=160></td>
+<td><img src="https://user-images.githubusercontent.com/58701169/127970085-c2ad1343-533e-4348-9bee-12d5d7ea6b2b.jpg" width=160></td>
+      </tr>
+  </table>
+  
